@@ -3,11 +3,10 @@ pipeline {
 
   environment {
     DOCKER_IMAGE = "java-app"
-    SONARQUBE = "sonar" // Jenkins Sonar config name
+    SONARQUBE = "sonar" // Jenkins Sonar config name (must match Jenkins Global Tool config)
   }
 
   stages {
-
     stage('Checkout') {
       steps {
         git branch: 'main', url: 'https://github.com/Ashokbadam52/Sample-Java-App-Setup.git'
@@ -33,22 +32,20 @@ pipeline {
 
     stage('Docker Build') {
       steps {
-        sh 'docker build -t $DOCKER_IMAGE:latest .'
+        sh 'docker build -t "$DOCKER_IMAGE":latest .'
       }
     }
 
     stage('K8s Deploy') {
       steps {
-        sh 'export KUBECONFIG=/var/lib/jenkins/.kube/config && kubectl apply -f k8s-deployment.yaml'
+        sh 'sudo KUBECONFIG=/var/lib/jenkins/.kube/config kubectl apply -f k8s-deployment.yaml'
       }
     }
 
     stage('Verify K8s Deployment') {
       steps {
-        withEnv(["KUBECONFIG=/var/lib/jenkins/.kube/config"]) {
-          sh 'kubectl get pods'
-          sh 'kubectl get svc'
-        }
+        sh 'sudo KUBECONFIG=/var/lib/jenkins/.kube/config kubectl get pods'
+        sh 'sudo KUBECONFIG=/var/lib/jenkins/.kube/config kubectl get svc'
       }
     }
   }
