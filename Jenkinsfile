@@ -22,7 +22,7 @@ pipeline {
 
     stage('Code Analysis') {
       environment {
-        SONAR_AUTH = credentials('sonar-token') // Use your Jenkins credential ID
+        SONAR_AUTH = credentials('Sonarqube-token') // Use your Jenkins credential ID
       }
       steps {
         withSonarQubeEnv("${SONARQUBE}") {
