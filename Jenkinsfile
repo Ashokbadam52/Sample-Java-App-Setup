@@ -3,7 +3,8 @@ pipeline {
 
   environment {
     DOCKER_IMAGE = "java-app"
-    SONARQUBE = "sonar" // Jenkins Sonar config name
+    SONARQUBE = "sonar" // This is the ID from Manage Jenkins > Configure System
+    SONAR_AUTH = credentials('sonar-token') // The token stored in Jenkins credentials
   }
 
   stages {
@@ -19,21 +20,28 @@ pipeline {
       }
     }
 
-   stage('Code Analysis') {
-  environment {
-    SONAR_AUTH = credentials('sonar-token')  // Use the Jenkins credentials ID
-  }
-  steps {
-    withSonarQubeEnv("${SONARQUBE}") {
-      sh 'mvn sonar:sonar -Dsonar.login=${SONAR_AUTH}'
+    stage('Code Analysis') {
+      steps {
+        withSonarQubeEnv("${SONARQUBE}") {
+          sh 'mvn sonar:sonar -Dsonar.login=${SONAR_AUTH}'
+        }
+      }
     }
-  }
-}
 
+    // Optional: Wait for SonarQube Quality Gate
+    /*
+    stage('Quality Gate') {
+      steps {
+        timeout(time: 2, unit: 'MINUTES') {
+          waitForQualityGate abortPipeline: true
+        }
+      }
+    }
+    */
 
     stage('Docker Build') {
       steps {
-        sh 'docker build -t ${DOCKER_IMAGE}:latest .'
+        sh 'docker build -t "${DOCKER_IMAGE}:latest" .'
       }
     }
 
@@ -46,10 +54,10 @@ pipeline {
 
   post {
     success {
-      echo "Pipeline executed successfully!"
+      echo "✅ Pipeline executed successfully!"
     }
     failure {
-      echo "Pipeline failed!"
+      echo "❌ Pipeline failed!"
     }
   }
 }
