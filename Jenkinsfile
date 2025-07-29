@@ -4,7 +4,7 @@ pipeline {
   environment {
     DOCKER_IMAGE = "java-app"
     SONARQUBE = "sonar" // This is the ID from Manage Jenkins > Configure System
-    SONAR_AUTH = credentials('sonar-token') // The token stored in Jenkins credentials
+    SONAR_AUTH = credentials('Sonarqube-token') // The token stored in Jenkins credentials
   }
 
   stages {
