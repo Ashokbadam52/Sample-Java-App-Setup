@@ -19,13 +19,17 @@ pipeline {
       }
     }
 
-    stage('Code Analysis') {
-      steps {
-        withSonarQubeEnv("${SONARQUBE}") {
-          sh 'mvn sonar:sonar'
-        }
-      }
+   stage('Code Analysis') {
+  environment {
+    SONAR_AUTH = credentials('sonar-token')  // Use the Jenkins credentials ID
+  }
+  steps {
+    withSonarQubeEnv("${SONARQUBE}") {
+      sh 'mvn sonar:sonar -Dsonar.login=${SONAR_AUTH}'
     }
+  }
+}
+
 
     stage('Docker Build') {
       steps {
