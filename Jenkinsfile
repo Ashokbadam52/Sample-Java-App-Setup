@@ -3,11 +3,11 @@ pipeline {
 
   environment {
     DOCKER_IMAGE = "java-app"
-    SONARQUBE = "sonar" // This is the ID from Manage Jenkins > Configure System
-    SONAR_AUTH = credentials('Sonarqube-token') // The token stored in Jenkins credentials
+    SONARQUBE = "sonar" // Jenkins Sonar config name
   }
 
   stages {
+
     stage('Checkout') {
       steps {
         git branch: 'main', url: 'https://github.com/Ashokbadam52/Sample-Java-App-Setup.git'
@@ -21,33 +21,34 @@ pipeline {
     }
 
     stage('Code Analysis') {
+      environment {
+        SONAR_AUTH = credentials('sonar-token') // Use your Jenkins credential ID
+      }
       steps {
         withSonarQubeEnv("${SONARQUBE}") {
-          sh 'mvn sonar:sonar -Dsonar.login=${SONAR_AUTH}'
+          sh 'mvn sonar:sonar -Dsonar.login=$SONAR_AUTH'
         }
       }
     }
-
-    // Optional: Wait for SonarQube Quality Gate
-    /*
-    stage('Quality Gate') {
-      steps {
-        timeout(time: 2, unit: 'MINUTES') {
-          waitForQualityGate abortPipeline: true
-        }
-      }
-    }
-    */
 
     stage('Docker Build') {
       steps {
-        sh 'docker build -t "${DOCKER_IMAGE}:latest" .'
+        sh 'docker build -t $DOCKER_IMAGE:latest .'
       }
     }
 
     stage('K8s Deploy') {
       steps {
-        sh 'kubectl apply -f k8s-deployment.yaml'
+        sh 'export KUBECONFIG=/var/lib/jenkins/.kube/config && kubectl apply -f k8s-deployment.yaml'
+      }
+    }
+
+    stage('Verify K8s Deployment') {
+      steps {
+        withEnv(["KUBECONFIG=/var/lib/jenkins/.kube/config"]) {
+          sh 'kubectl get pods'
+          sh 'kubectl get svc'
+        }
       }
     }
   }
@@ -57,7 +58,7 @@ pipeline {
       echo "✅ Pipeline executed successfully!"
     }
     failure {
-      echo "❌ Pipeline failed!"
+      echo "❌ Pipeline failed. Check the logs above."
     }
   }
 }
