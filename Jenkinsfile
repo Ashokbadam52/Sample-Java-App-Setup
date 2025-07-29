@@ -3,7 +3,7 @@ pipeline {
 
   environment {
     DOCKER_IMAGE = "java-app"
-    SONARQUBE = "SonarQube" // Jenkins Sonar config name
+    SONARQUBE = "sonar" // Jenkins Sonar config name
   }
 
   stages {
