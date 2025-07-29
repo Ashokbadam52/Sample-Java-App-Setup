@@ -7,12 +7,14 @@ pipeline {
     SONARQUBE = "SonarQube" // Jenkins Sonar config name
   }
 
-  stages {
-    stage('Checkout') {
-      steps {
-        git 'https://github.com/Ashokbadam52/Sample-Java-App-Setup.git'
-      }
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/Ashokbadam52/Sample-Java-App-Setup.git'
+            }
+        }
     }
+}
 
     stage('Build') {
       steps {
