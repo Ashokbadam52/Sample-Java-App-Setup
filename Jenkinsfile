@@ -38,14 +38,15 @@ pipeline {
 
     stage('K8s Deploy') {
       steps {
-        sh 'sudo KUBECONFIG=/var/lib/jenkins/.kube/config kubectl apply -f k8s-deployment.yaml'
+        sh 'sudo -E KUBECONFIG=/var/lib/jenkins/.kube/config kubectl apply -f k8s-deployment.yaml''
       }
     }
 
     stage('Verify K8s Deployment') {
       steps {
-        sh 'sudo KUBECONFIG=/var/lib/jenkins/.kube/config kubectl get pods'
-        sh 'sudo KUBECONFIG=/var/lib/jenkins/.kube/config kubectl get svc'
+        sh 'sudo -E KUBECONFIG=/var/lib/jenkins/.kube/config kubectl get pods'
+        sh 'sudo -E KUBECONFIG=/var/lib/jenkins/.kube/config kubectl get svc'
+
       }
     }
   }
