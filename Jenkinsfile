@@ -3,10 +3,11 @@ pipeline {
 
   environment {
     DOCKER_IMAGE = "java-app"
-    SONARQUBE = "sonar" // Jenkins Sonar config name (must match Jenkins Global Tool config)
+    SONARQUBE = "sonar" // This must match Jenkins Global Tool Configuration
   }
 
   stages {
+
     stage('Checkout') {
       steps {
         git branch: 'main', url: 'https://github.com/Ashokbadam52/Sample-Java-App-Setup.git'
@@ -21,7 +22,7 @@ pipeline {
 
     stage('Code Analysis') {
       environment {
-        SONAR_AUTH = credentials('Sonarqube-token') // Use your Jenkins credential ID
+        SONAR_AUTH = credentials('Sonarqube-token')
       }
       steps {
         withSonarQubeEnv("${SONARQUBE}") {
@@ -32,41 +33,51 @@ pipeline {
 
     stage('Docker Build') {
       steps {
-        sh 'docker build -t "$DOCKER_IMAGE":latest .'
+        sh '''
+          docker build -t $DOCKER_IMAGE:latest .
+          docker tag $DOCKER_IMAGE:latest $DOCKER_IMAGE:${BUILD_NUMBER}
+        '''
       }
     }
-  stage('DockerHub Login') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh """
-                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                    """
-                }
-            }
-        }       
- 
-        stage('Push Image') {
-            steps {               
-                sh "docker push $DOCKER_IMAGE:${BUILD_NUMBER}"
-            }
+
+    stage('DockerHub Login') {
+      steps {
+        withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+          sh '''
+            echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+          '''
         }
+      }
+    }
 
-  //   stage('K8s Deploy') {
-  //     steps {
-  //       // sh 'sudo KUBECONFIG=/var/lib/jenkins/.kube/config kubectl apply -f k8s-deployment.yaml'
-  //      sh 'kubectl apply -f k8s-deployment.yaml'
+    stage('Push Image') {
+      steps {
+        sh 'docker push $DOCKER_IMAGE:${BUILD_NUMBER}'
+      }
+    }
 
-  //     }
-  //   }
+    // Uncomment below stages once KUBECONFIG is properly setup
+    /*
+    stage('K8s Deploy') {
+      steps {
+        sh '''
+          export KUBECONFIG=/var/lib/jenkins/.kube/config
+          kubectl apply -f k8s-deployment.yaml
+        '''
+      }
+    }
 
-  //   stage('Verify K8s Deployment') {
-  //     steps {
-  //       sh 'sudo KUBECONFIG=/var/lib/jenkins/.kube/config kubectl get pods'
-  //       sh 'sudo KUBECONFIG=/var/lib/jenkins/.kube/config kubectl get svc'
-
-  //     }
-  //   }
-  // }
+    stage('Verify K8s Deployment') {
+      steps {
+        sh '''
+          export KUBECONFIG=/var/lib/jenkins/.kube/config
+          kubectl get pods
+          kubectl get svc
+        '''
+      }
+    }
+    */
+  }
 
   post {
     success {
