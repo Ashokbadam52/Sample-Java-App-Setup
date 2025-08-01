@@ -55,6 +55,20 @@ pipeline {
         sh 'docker push $DOCKER_IMAGE:${BUILD_NUMBER}'
       }
     }
+    stage('Deploy to EC2') {
+  steps {
+    sshagent (credentials: ['ec2-ssh']) {
+      sh '''
+        ssh -o StrictHostKeyChecking=no ec2-user@<EC2_PUBLIC_IP> '
+          sudo docker pull ashokdevops582/java-app:${BUILD_NUMBER} &&
+          sudo docker stop java-app || true &&
+          sudo docker rm java-app || true &&
+          sudo docker run -d --name java-app -p 8080:8080 ashokdevops582/java-app:${BUILD_NUMBER}
+        '
+      '''
+    }
+  }
+}
 
     // Uncomment below stages once KUBECONFIG is properly setup
     /*
