@@ -35,23 +35,38 @@ pipeline {
         sh 'docker build -t "$DOCKER_IMAGE":latest .'
       }
     }
+  stage('DockerHub Login') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh """
+                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                    """
+                }
+            }
+        }       
+ 
+        stage('Push Image') {
+            steps {               
+                sh "docker push $DOCKER_IMAGE:${BUILD_NUMBER}"
+            }
+        }
 
-    stage('K8s Deploy') {
-      steps {
-        // sh 'sudo KUBECONFIG=/var/lib/jenkins/.kube/config kubectl apply -f k8s-deployment.yaml'
-       sh 'kubectl apply -f k8s-deployment.yaml'
+  //   stage('K8s Deploy') {
+  //     steps {
+  //       // sh 'sudo KUBECONFIG=/var/lib/jenkins/.kube/config kubectl apply -f k8s-deployment.yaml'
+  //      sh 'kubectl apply -f k8s-deployment.yaml'
 
-      }
-    }
+  //     }
+  //   }
 
-    stage('Verify K8s Deployment') {
-      steps {
-        sh 'sudo KUBECONFIG=/var/lib/jenkins/.kube/config kubectl get pods'
-        sh 'sudo KUBECONFIG=/var/lib/jenkins/.kube/config kubectl get svc'
+  //   stage('Verify K8s Deployment') {
+  //     steps {
+  //       sh 'sudo KUBECONFIG=/var/lib/jenkins/.kube/config kubectl get pods'
+  //       sh 'sudo KUBECONFIG=/var/lib/jenkins/.kube/config kubectl get svc'
 
-      }
-    }
-  }
+  //     }
+  //   }
+  // }
 
   post {
     success {
