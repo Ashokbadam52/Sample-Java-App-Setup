@@ -69,28 +69,6 @@ pipeline {
     }
   }
 }
-
-    // Uncomment below stages once KUBECONFIG is properly setup
-    /*
-    stage('K8s Deploy') {
-      steps {
-        sh '''
-          export KUBECONFIG=/var/lib/jenkins/.kube/config
-          kubectl apply -f k8s-deployment.yaml
-        '''
-      }
-    }
-
-    stage('Verify K8s Deployment') {
-      steps {
-        sh '''
-          export KUBECONFIG=/var/lib/jenkins/.kube/config
-          kubectl get pods
-          kubectl get svc
-        '''
-      }
-    }
-    */
   }
 
   post {
