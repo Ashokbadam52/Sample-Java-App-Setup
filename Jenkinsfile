@@ -59,7 +59,7 @@ pipeline {
         steps {
             sshagent (credentials: ['ec2-ssh']) {
               sh '''
-                ssh -o StrictHostKeyChecking=no ec2-user@44.211.175.148 << EOF
+                ssh -o StrictHostKeyChecking=no ubuntu@44.211.175.148 << EOF
                   sudo docker pull ashokdevops582/java-app:${BUILD_NUMBER}
                   sudo docker stop java-app || true
                   sudo docker rm java-app || true
