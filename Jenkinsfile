@@ -3,11 +3,10 @@ pipeline {
 
   environment {
     DOCKER_IMAGE = "ashokdevops582/java-app"
-    SONARQUBE = "sonar" // This must match Jenkins Global Tool Configuration
+    SONARQUBE = "sonar" // Must match Jenkins Global Tool Configuration
   }
 
   stages {
-
     stage('Checkout') {
       steps {
         git branch: 'main', url: 'https://github.com/Ashokbadam52/Sample-Java-App-Setup.git'
@@ -52,23 +51,26 @@ pipeline {
 
     stage('Push Image') {
       steps {
-        sh 'docker push $DOCKER_IMAGE:${BUILD_NUMBER}'
+        sh '''
+          docker push $DOCKER_IMAGE:${BUILD_NUMBER}
+        '''
       }
     }
+
     stage('Deploy to EC2') {
-        steps {
-            sshagent (credentials: ['ec2-ssh']) {
-              sh '''
-                ssh -o StrictHostKeyChecking=no ubuntu@44.211.175.148 
-                  sudo docker pull ashokdevops582/java-app:${BUILD_NUMBER}
-                  sudo docker stop java-app || true
-                  sudo docker rm java-app || true
-                  sudo docker run -d --name java-app -p 8080:8081 ashokdevops582/java-app:${BUILD_NUMBER}
-                
-              '''
-            }
-          }
+      steps {
+        sshagent(['ec2-ssh']) {
+          sh '''
+            ssh -o StrictHostKeyChecking=no ubuntu@44.211.175.148 '
+              docker pull $DOCKER_IMAGE:${BUILD_NUMBER}
+              docker stop java-app || true
+              docker rm java-app || true
+              docker run -d -p 8080:8081 --name java-app $DOCKER_IMAGE:${BUILD_NUMBER}
+            '
+          '''
         }
+      }
+    }
   }
 
   post {
