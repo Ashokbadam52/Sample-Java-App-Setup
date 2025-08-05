@@ -65,7 +65,7 @@ pipeline {
         "sudo docker pull ashokdevops582/java-app:${BUILD_NUMBER} && \\
          sudo docker stop java-app || true && \\
          sudo docker rm java-app || true && \\
-         sudo docker run -d -P  --name java-app ashokdevops582/java-app:${BUILD_NUMBER}"
+         sudo docker run -d -p 8081:8080  --name java-app ashokdevops582/java-app:${BUILD_NUMBER}"
       """
     }
   }
