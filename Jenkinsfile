@@ -58,18 +58,19 @@ pipeline {
     }
 
     stage('Deploy to EC2') {
-            steps {
-                sshagent(['ec2-ssh']) {
-                    sh """
-                        ssh -o StrictHostKeyChecking=no ubuntu@44.211.175.148  '
-                            sudo docker pull ashokdevops582/java-app:${BUILD_NUMBER}
-                            sudo docker stop java-app || true
-                            sudo docker rm java-app || true
-                            sudo docker run -d -p 8080:8081 --name java-app ashokdevops582/java-app:$BUILD_NUMBER
-                            """
+  steps {
+    sshagent(['ec2-ssh']) {
+      sh """
+        ssh -o StrictHostKeyChecking=no ubuntu@44.211.175.148 \\
+        "sudo docker pull ashokdevops582/java-app:${BUILD_NUMBER} && \\
+         sudo docker stop java-app || true && \\
+         sudo docker rm java-app || true && \\
+         sudo docker run -d -p 5050:5050 --name java-app ashokdevops582/java-app:${BUILD_NUMBER}"
+      """
+    }
+  }
 }
-}
-}
+
 
   }
 
