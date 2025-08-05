@@ -2,7 +2,7 @@ pipeline {
   agent any
 
   environment {
-    DOCKER_IMAGE = "ashokdevops582/java-ap"
+    DOCKER_IMAGE = "ashokdevops582/java-app"
     SONARQUBE = "sonar" // This must match Jenkins Global Tool Configuration
   }
 
